@@ -1,0 +1,104 @@
+apply plugin: 'maven'
+apply plugin: 'com.jfrog.bintray'
+
+//============artifacts===============
+if (project.hasProperty("android")) { // Android libraries
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        from android.sourceSets.main.java.srcDirs
+    }
+
+    task javadoc(type: Javadoc) {
+        source = android.sourceSets.main.java.srcDirs
+        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    }
+} else { // Java libraries
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+javadoc {
+    options {
+        encoding "UTF-8"
+        charSet 'UTF-8'
+        author true
+        version true
+        links "http://docs.oracle.com/javase/7/docs/api"
+        failOnError false
+    }
+}
+
+//============maven===============
+uploadArchives {
+    repositories.mavenDeployer {
+        Properties properties = new Properties()
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+        repository(url: properties.getProperty("LOCAL_REPOSITORY_URL")) {
+            authentication(userName: properties.getProperty("LOCAL_REPOSITORY_USER_NAME"), password: properties.getProperty("LOCAL_REPOSITORY_PASSWORD"))
+        }
+
+        pom.groupId = PROJ_GROUP
+        pom.artifactId = PROJ_ARTIFACTID
+        pom.version = PROJ_VERSION
+        pom.project {
+            packaging POM_PACKAGING
+            description PROJ_DESC
+            url PROJ_SITE_URL
+            scm {
+                connection PROJ_VCS_URL
+                developerConnection PROJ_VCS_URL
+                url PROJ_SITE_URL
+            }
+            developers {
+                developer {
+                    id DEVELOPER_ID
+                    name DEVELOPER_NAME
+                    email DEVELOPER_EMAIL
+                }
+            }
+            licenses {
+                license {
+                    name PROJ_LICENCE_NAME
+                    url PROJ_LICENCE_URL
+                    distribution PROJ_LICENCE_DEST
+                }
+            }
+        }
+    }
+}
+
+//============bintray===============
+version = PROJ_VERSION
+group = PROJ_GROUP
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+
+    configurations = ['archives']
+    pkg {
+        repo = BINTRAY_REPO
+        licenses = BINTRAY_LICENCE
+        name = PROJ_ARTIFACTID
+        desc = PROJ_DESC
+        websiteUrl = PROJ_SITE_URL
+        vcsUrl = PROJ_VCS_URL
+        publish = true
+        publicDownloadNumbers = false
+    }
+}

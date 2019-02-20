@@ -1,15 +1,13 @@
 # ArgBinding
-[中文文档](README_CN.md)
+ArgBinding是一个Android上简化`Activity`和`Fragment`参数传递的工具，与常规方法相比有以下优势：
 
-ArgBinding is a Android tool to simplify `Activity` and `Fragment` parameter passing.Compared with the conventional method, it has the following advantages:
+- 简化参数传递。
+- 检查必传参数是否传递。
+- 编译期间检查参数类型是否正确。
 
-- Simplified parameter passing.
-- Check if the required parameters are passed.
-- Check that the parameter type is correct during compilation.
+##### 使用方法
 
-##### Instructions
-
-The `Fragment` example of `ArgBinding`.
+使用`ArgBinding`的`Fragment`示例。
 
 ```java
 //definition the Fragment
@@ -37,7 +35,7 @@ TestFrTestFragment fragment = TestFragmentBuilder.newBuilder()
         .build();agment fragment = TestFragmentBuilder.newBuilder()
 ```
 
-The `Fragment` example of `ArgBinding`.
+使用`ArgBinding`的`Activity`示例。
 
 ```java
 //definition the Activity
@@ -67,7 +65,7 @@ TestActivityIntentBuilder.newBuilder()
                 .startActivity();
 ```
 
-In the conventional method, the `Fragment` parameter is passed using the officially recommended `setArguments` method, because in many scenarios, the `Fragment` re-creation will occur. When re-creating, the system calls the default constructor of the `Fragment`. The parameters passed by other constructors at this time will disappear. Below is an example of a regular method.
+常规方法，`Fragment`参数传递要使用官方推荐的`setArguments`方法，因为在很多场景下都会出现`Fragment`重新创建的情况，重新创建的时候系统调用的是`Fragment`的默认构造器，这个时候通过其他构造器传递的参数将会消失。下面是常规方法示例。
 
 ```java
 // definition the Fragment
@@ -102,7 +100,7 @@ public class TestFragment extends Fragment {
 TestFragment fragment = TestFragment.newInstance("001", "ZhangSan", 12);
 ```
 
-###### Dependencies
+###### 依赖配置
 
 ```groovy
 dependencies {
@@ -111,22 +109,22 @@ dependencies {
 }
 ```
 
-`If you are using Kotlin, replace annotationProcessor with kapt.`
+`如果使用Kotlin，用kapt代替annotationProcessor。`
 
-###### Proguard rules
+###### 混淆规则
 
 ```
 -keep class * extends org.seiya.argbinding.ArgBinder
 ```
 
-More usage reference [sample](https://github.com/hbzha/ArgBinding/tree/master/argbinding-sample).
+更多使用方法参考[sample](https://github.com/hbzha/ArgBinding/tree/master/argbinding-sample)。
 
-##### Special Instructions
+##### 特殊说明
 
-- `ArgBinding.get().setCheckRequiredArg()`sets whether to check the required parameter are passed. The default is to check.
-- `BindArg`'s method `required` set whether parameter is required, the default is true; `value` set parameter's alias, witch can modify the parameter `Key` and the generated `Builder` method name.
-- `BindTarget`，you need to annotate the class that needs to generate the `Builder` when there is no `BindArg` annotated field.
-- `Builder`和`Binder` class is automatically generated during the build process. After the code is compiled or modified, it will not take effect until the build project.
+- `ArgBinding.get().setCheckRequiredArg()`方法设置是否检查必传参数是否传递，默认是检查。
+- `BindArg`注解的`required`方法设置是否必传参数，默认为true，配合；`value`方法设置参数别名，可以修改参数`Key`和生成的`Builder`方法名称。
+- `BindTarget`注解，在没有`BindArg`注解的字段时才需要注解到需要生成`Builder`的类上。
+- `Builder`和`Binder`类是在build过程中自动生成的，编写完代码或者修改后，build工程才会生效。
 
 ##### License
 

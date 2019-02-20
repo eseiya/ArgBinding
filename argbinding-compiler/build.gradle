@@ -1,0 +1,14 @@
+apply plugin: 'java-library'
+
+compileJava {
+    sourceCompatibility JAVA_VERSION
+    targetCompatibility JAVA_VERSION
+}
+
+dependencies {
+    implementation 'com.google.auto.service:auto-service:1.0-rc3'
+    implementation 'com.squareup:javapoet:1.11.1'
+    implementation "org.seiya:argbinding-common:${PROJ_VERSION}"
+}
+
+apply from: rootProject.file('mvn-push.gradle')
