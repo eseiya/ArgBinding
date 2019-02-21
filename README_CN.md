@@ -7,7 +7,7 @@ ArgBinding是一个Android上简化`Activity`和`Fragment`参数传递的工具�
 
 ##### 使用方法
 
-使用`ArgBinding`的`Fragment`示例。
+`Fragment`的ArgBinding示例。
 
 ```java
 //definition the Fragment
@@ -35,7 +35,7 @@ TestFrTestFragment fragment = TestFragmentBuilder.newBuilder()
         .build();agment fragment = TestFragmentBuilder.newBuilder()
 ```
 
-使用`ArgBinding`的`Activity`示例。
+`Activity`的ArgBinding示例。
 
 ```java
 //definition the Activity
@@ -109,7 +109,9 @@ dependencies {
 }
 ```
 
-`如果使用Kotlin，用kapt代替annotationProcessor。`
+如果使用`Kotlin`，用`kapt`代替`annotationProcessor`。
+
+本库依赖`android support`包，如果有冲突，可以排除本库的`support`包。
 
 ###### 混淆规则
 
@@ -117,7 +119,7 @@ dependencies {
 -keep class * extends org.seiya.argbinding.ArgBinder
 ```
 
-更多使用方法参考[sample](https://github.com/hbzha/ArgBinding/tree/master/argbinding-sample)。
+更多使用方法请参考[argbinding-sample](https://github.com/hbzha/ArgBinding/tree/master/argbinding-sample)。
 
 ##### 特殊说明
 

@@ -9,7 +9,7 @@ ArgBinding is a Android tool to simplify `Activity` and `Fragment` parameter pas
 
 ##### Instructions
 
-The `Fragment` example of `ArgBinding`.
+The `Fragment` example of ArgBinding.
 
 ```java
 //definition the Fragment
@@ -37,7 +37,7 @@ TestFrTestFragment fragment = TestFragmentBuilder.newBuilder()
         .build();agment fragment = TestFragmentBuilder.newBuilder()
 ```
 
-The `Fragment` example of `ArgBinding`.
+The `Activity` example of ArgBinding.
 
 ```java
 //definition the Activity
@@ -67,7 +67,7 @@ TestActivityIntentBuilder.newBuilder()
                 .startActivity();
 ```
 
-In the conventional method, the `Fragment` parameter is passed using the officially recommended `setArguments` method, because in many scenarios, the `Fragment` re-creation will occur. When re-creating, the system calls the default constructor of the `Fragment`. The parameters passed by other constructors at this time will disappear. Below is an example of a regular method.
+In the conventional method, the `Fragment` parameter is passed using the officially recommended `setArguments` method, because in many scenarios, the `Fragment` re-creation will occur. When re-creating, the system calls the default constructor of the `Fragment`. The parameters passed by other constructors at this time will disappear. Below is an example of regular method.
 
 ```java
 // definition the Fragment
@@ -111,7 +111,9 @@ dependencies {
 }
 ```
 
-`If you are using Kotlin, replace annotationProcessor with kapt.`
+If you are using `Kotlin`, replace `annotationProcessor` with `kapt`.
+
+This library relies on the `android support` . If there is a conflict, you can exclude `support` library of this library.
 
 ###### Proguard rules
 
@@ -119,7 +121,7 @@ dependencies {
 -keep class * extends org.seiya.argbinding.ArgBinder
 ```
 
-More usage reference [sample](https://github.com/hbzha/ArgBinding/tree/master/argbinding-sample).
+More usage reference [argbinding-sample](https://github.com/hbzha/ArgBinding/tree/master/argbinding-sample).
 
 ##### Special Instructions
 
