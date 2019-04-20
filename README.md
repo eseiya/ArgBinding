@@ -3,9 +3,9 @@
 
 ArgBinding is a Android tool to simplify `Activity` and `Fragment` parameter passing.Compared with the conventional method, it has the following advantages:
 
-- Simplified parameter passing.
+- Pass parameters through the builder mode to avoid adding parameter constants and factory methods.
+- Check that the parameter's type and name is correct during compilation.
 - Check if the required parameters are passed.
-- Check that the parameter type is correct during compilation.
 
 ##### Instructions
 
@@ -34,7 +34,7 @@ TestFrTestFragment fragment = TestFragmentBuilder.newBuilder()
         .setId("001")
         .setName("ZhangSan")
         .setAge(12)
-        .build();agment fragment = TestFragmentBuilder.newBuilder()
+        .build();
 ```
 
 The `Activity` example of ArgBinding.

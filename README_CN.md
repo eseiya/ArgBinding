@@ -1,9 +1,9 @@
 # ArgBinding
 ArgBinding是一个Android上简化`Activity`和`Fragment`参数传递的工具，与常规方法相比有以下优势：
 
-- 简化参数传递。
+- 通过构建者模式传递参数，避免添加参数常量和工厂方法。
+- 编译期间检查参数类型和名称是否正确。
 - 检查必传参数是否传递。
-- 编译期间检查参数类型是否正确。
 
 ##### 使用方法
 
@@ -32,7 +32,7 @@ TestFrTestFragment fragment = TestFragmentBuilder.newBuilder()
         .setId("001")
         .setName("ZhangSan")
         .setAge(12)
-        .build();agment fragment = TestFragmentBuilder.newBuilder()
+        .build();
 ```
 
 `Activity`的ArgBinding示例。
