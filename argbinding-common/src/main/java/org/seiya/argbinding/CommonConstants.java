@@ -25,6 +25,5 @@ package org.seiya.argbinding;
 class CommonConstants {
     public static final String SEPARATOR = "$$";
     public static final String BINDER_NAME_SUFFIX = SEPARATOR + "ArgBinder";
-    public static final String BUILDER_NAME_SUFFIX = "Builder";
-    public static final String INTENT_BUILDER_NAME_SUFFIX = "IntentBuilder";
+    public static final String BUILDER_NAME_SUFFIX = "ArgBuilder";
 }

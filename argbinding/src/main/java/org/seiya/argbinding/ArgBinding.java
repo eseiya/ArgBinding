@@ -117,7 +117,7 @@ public class ArgBinding {
      */
     @NonNull
     @UiThread
-    private void bind(@NonNull Object target, Bundle args) {
+    public void bind(@NonNull Object target, Bundle args) {
         Class<?> targetClass = target.getClass();
         if (debug) Log.d(TAG, "Looking up binding for " + targetClass.getName());
         Class<? extends ArgBinder> bindingClass = findBinderClass(target.getClass());
