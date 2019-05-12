@@ -104,8 +104,8 @@ TestFragment fragment = TestFragment.newInstance("001", "ZhangSan", 12);
 
 ```groovy
 dependencies {
-    implementation 'org.seiya:argbinding:1.0.0'
-    annotationProcessor 'org.seiya:argbinding-compiler:1.0.0'
+    implementation 'org.seiya:argbinding:1.1.0'
+    annotationProcessor 'org.seiya:argbinding-compiler:1.1.0'
 }
 ```
 
