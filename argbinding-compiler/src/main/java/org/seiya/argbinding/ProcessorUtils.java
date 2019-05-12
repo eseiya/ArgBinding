@@ -29,10 +29,6 @@ class ProcessorUtils {
         return str.substring(0, 1).toUpperCase().concat(str.substring(1));
     }
 
-    public static String getBuilderSuffix() {
-        return CommonConstants.BUILDER_NAME_SUFFIX;
-    }
-
     public static boolean isEmpty(String str) {
         return str == null || str.isEmpty();
     }

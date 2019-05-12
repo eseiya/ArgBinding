@@ -25,11 +25,12 @@ import android.content.ServiceConnection;
  * @author ZhengAn
  * @date 2019/5/12
  */
-public abstract class ServiceArgBuilder<T extends IntentArgBuilder<T>> extends IntentArgBuilder<T> {
+public abstract class ServiceArgBuilder<T extends ServiceArgBuilder<T>> extends IntentArgBuilder<T> {
 
     /**
      * Start Service use build intent, context can't be null.
      */
+    @Override
     public void start() {
         checkContextNull();
         Intent intent = build();

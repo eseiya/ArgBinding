@@ -247,7 +247,7 @@ public class ArgBindingProcessor extends AbstractProcessor {
     private void generateBuilder(TypeElement targetElement, List<Element> fields) throws IOException {
         ClassName targetTypeName = ClassName.get(targetElement);
         boolean isContext = isActivity(targetElement) || isService(targetElement);
-        ClassName builderTypeName = ClassName.bestGuess(targetElement.getQualifiedName() + ProcessorUtils.getBuilderSuffix());
+        ClassName builderTypeName = ClassName.bestGuess(targetElement.getQualifiedName() + CommonConstants.BUILDER_NAME_SUFFIX);
 
         boolean isPublic = targetElement.getModifiers().contains(Modifier.PUBLIC);
         //abstract fragment
@@ -443,7 +443,7 @@ public class ArgBindingProcessor extends AbstractProcessor {
         TypeElement superTypeElement = targetParents.get(targetElement);
         TypeName superTypeName;
         if (superTypeElement != null) {
-            superTypeName = ClassName.bestGuess(superTypeElement.getQualifiedName() + ProcessorUtils.getBuilderSuffix());
+            superTypeName = ClassName.bestGuess(superTypeElement.getQualifiedName() + CommonConstants.BUILDER_NAME_SUFFIX);
         } else if (isActivity(targetElement)) {
             superTypeName = ACTIVITY_ARG_BUILDER_CLASS;
         } else if (isService(targetElement)) {

@@ -61,7 +61,7 @@ public class SampleService extends Service {
     }
 
     private void bindExtra(Intent intent) {
-        ArgBinding.get().bind(this, intent.getExtras());
+        ArgBinding.get().bind(this, intent);
 
         StringBuilder sBuilder = new StringBuilder();
         sBuilder.append("name:" + name + "\n");

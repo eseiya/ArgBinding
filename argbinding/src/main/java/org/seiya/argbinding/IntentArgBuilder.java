@@ -26,7 +26,7 @@ import android.support.annotation.NonNull;
  * @author ZhengAn
  * @date 2019/2/12
  */
-public abstract class IntentArgBuilder<T extends IntentArgBuilder<T>> extends ArgBuilder<T> {
+abstract class IntentArgBuilder<T extends IntentArgBuilder<T>> extends ArgBuilder<T> {
     Context context;
     private int intentFlags;
 
@@ -76,4 +76,6 @@ public abstract class IntentArgBuilder<T extends IntentArgBuilder<T>> extends Ar
             throw new IllegalArgumentException("Context is null, please set context.");
         }
     }
+
+    public abstract void start();
 }

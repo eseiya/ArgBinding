@@ -17,6 +17,7 @@
 package org.seiya.argbinding;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
@@ -117,7 +118,18 @@ public class ArgBinding {
      */
     @NonNull
     @UiThread
-    public void bind(@NonNull Object target, Bundle args) {
+    public void bind(@NonNull Object target, @NonNull Intent intent) {
+        bind(target, intent.getExtras());
+    }
+
+    /**
+     * Bind annotated fields in the specified {@code target} .
+     *
+     * @param target Target class for arg binding.
+     */
+    @NonNull
+    @UiThread
+    private void bind(@NonNull Object target, Bundle args) {
         Class<?> targetClass = target.getClass();
         if (debug) Log.d(TAG, "Looking up binding for " + targetClass.getName());
         Class<? extends ArgBinder> bindingClass = findBinderClass(target.getClass());
