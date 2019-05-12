@@ -1,7 +1,7 @@
 # ArgBinding
 [中文文档](README_CN.md)
 
-ArgBinding is a Android tool to simplify `Activity` and `Fragment` parameter passing.Compared with the conventional method, it has the following advantages:
+ArgBinding is an Android tool to simplify `Activity` and `Fragment` parameter passing.Compared with the conventional method, it has the following advantages:
 
 - Pass parameters through the builder mode to avoid adding parameter constants and factory methods.
 - Check that the parameter's type and name is correct during compilation.
