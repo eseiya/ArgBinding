@@ -30,7 +30,7 @@ public class TestFragment extends Fragment {
 }
 
 // user the Fragment
-TestFrTestFragment fragment = TestFragmentBuilder.newBuilder()
+TestFragment fragment = TestArgFragmentArgBuilder.newBuilder()
         .setId("001")
         .setName("ZhangSan")
         .setAge(12)
@@ -58,13 +58,13 @@ public class TestActivity extends AppCompatActivity {
 }
 
 // user the Activity
-TestActivityIntentBuilder.newBuilder()
+TestActivityArgBuilder.newBuilder()
                 .setId("001")
                 .setName("ZhangSan")
                 .setAge(12)
                 .setContext(this)
                 .setIntentFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                .startActivity();
+                .start();
 ```
 
 In the conventional method, the `Fragment` parameter is passed using the officially recommended `setArguments` method, because in many scenarios, the `Fragment` re-creation will occur. When re-creating, the system calls the default constructor of the `Fragment`. The parameters passed by other constructors at this time will disappear. Below is an example of regular method.

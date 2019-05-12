@@ -28,7 +28,7 @@ public class TestFragment extends Fragment {
 }
 
 // user the Fragment
-TestFrTestFragment fragment = TestFragmentBuilder.newBuilder()
+TestFragment fragment = TestArgFragmentArgBuilder.newBuilder()
         .setId("001")
         .setName("ZhangSan")
         .setAge(12)
@@ -56,13 +56,13 @@ public class TestActivity extends AppCompatActivity {
 }
 
 // user the Activity
-TestActivityIntentBuilder.newBuilder()
+TestActivityArgBuilder.newBuilder()
                 .setId("001")
                 .setName("ZhangSan")
                 .setAge(12)
                 .setContext(this)
                 .setIntentFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                .startActivity();
+                .start();
 ```
 
 常规方法，`Fragment`参数传递要使用官方推荐的`setArguments`方法，因为在很多场景下都会出现`Fragment`重新创建的情况，重新创建的时候系统调用的是`Fragment`的默认构造器，这个时候通过其他构造器传递的参数将会消失。下面是常规方法示例。
