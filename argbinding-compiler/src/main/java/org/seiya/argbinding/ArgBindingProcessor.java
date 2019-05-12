@@ -188,9 +188,9 @@ public class ArgBindingProcessor extends AbstractProcessor {
      * Check whether the bind field is legal.
      */
     private void checkField(TypeElement targetElement, Element fieldElement) {
-        if (fieldElement.getModifiers().contains(Modifier.PRIVATE) ||
-                fieldElement.getModifiers().contains(Modifier.STATIC) ||
-                fieldElement.getModifiers().contains(Modifier.FINAL)) {
+        Set<Modifier> modifiers = fieldElement.getModifiers();
+        if (modifiers.contains(Modifier.PRIVATE) || modifiers.contains(Modifier.STATIC) ||
+                modifiers.contains(Modifier.FINAL)) {
             ProcessorUtils.error("The bind field must not be private or static or final.[%s.%s]", targetElement.getQualifiedName(), fieldElement.getSimpleName());
         }
         String type = getBundleMethodType(fieldElement);
