@@ -21,6 +21,8 @@
         <activity android:name=".TestActivity" />
         <activity android:name=".Test2Activity" />
         <activity android:name=".TestKotlinActivity" />
+
+        <service android:name=".SampleService" />
     </application>
 
 </manifest>

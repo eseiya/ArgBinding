@@ -74,18 +74,22 @@ public class ArgBindingProcessor extends AbstractProcessor {
     public static final String SERIALIZABLE = "java.io.Serializable";
     public static final String PARCELABLE = "android.os.Parcelable";
     public static final String ACTIVITY = "android.app.Activity";
+    public static final String CONTEXT = "android.content.Context";
     public static final String FRAGMENT = "android.app.Fragment";
     public static final String V4_FRAGMENT = "android.support.v4.app.Fragment";
+    public static final String SERVICE = "android.app.Service";
 
     private static final ClassName BUNDLE_CLASS = ClassName.bestGuess("android.os.Bundle");
     private static final ClassName PARCELABLE_CLASS = ClassName.bestGuess(PARCELABLE);
     private static final ClassName ARG_BUILDER_CLASS = ClassName.bestGuess("org.seiya.argbinding.ArgBuilder");
-    private static final ClassName INTENT_ARG_BUILDER_CLASS = ClassName.bestGuess("org.seiya.argbinding.IntentArgBuilder");
+    private static final ClassName ACTIVITY_ARG_BUILDER_CLASS = ClassName.bestGuess("org.seiya.argbinding.ActivityArgBuilder");
+    private static final ClassName SERVICE_ARG_BUILDER_CLASS = ClassName.bestGuess("org.seiya.argbinding.ServiceArgBuilder");
     private static final ClassName ARG_BINDER_CLASS = ClassName.bestGuess("org.seiya.argbinding.ArgBinder");
 
     private TypeMirror activityType;
     private TypeMirror fragmentType;
     private TypeMirror v4FragmentType;
+    private TypeMirror serviceType;
     private TypeMirror parcelableType;
     private TypeMirror serializableType;
 
@@ -112,6 +116,7 @@ public class ArgBindingProcessor extends AbstractProcessor {
         activityType = elementsUtil.getTypeElement(ACTIVITY).asType();
         fragmentType = elementsUtil.getTypeElement(FRAGMENT).asType();
         v4FragmentType = elementsUtil.getTypeElement(V4_FRAGMENT).asType();
+        serviceType = elementsUtil.getTypeElement(SERVICE).asType();
         parcelableType = elementsUtil.getTypeElement(PARCELABLE).asType();
         serializableType = elementsUtil.getTypeElement(SERIALIZABLE).asType();
     }
@@ -188,9 +193,9 @@ public class ArgBindingProcessor extends AbstractProcessor {
      * Check whether the bind field is legal.
      */
     private void checkField(TypeElement targetElement, Element fieldElement) {
-        if (fieldElement.getModifiers().contains(Modifier.PRIVATE) ||
-                fieldElement.getModifiers().contains(Modifier.STATIC) ||
-                fieldElement.getModifiers().contains(Modifier.FINAL)) {
+        Set<Modifier> modifiers = fieldElement.getModifiers();
+        if (modifiers.contains(Modifier.PRIVATE) || modifiers.contains(Modifier.STATIC) ||
+                modifiers.contains(Modifier.FINAL)) {
             ProcessorUtils.error("The bind field must not be private or static or final.[%s.%s]", targetElement.getQualifiedName(), fieldElement.getSimpleName());
         }
         String type = getBundleMethodType(fieldElement);
@@ -241,17 +246,17 @@ public class ArgBindingProcessor extends AbstractProcessor {
 
     private void generateBuilder(TypeElement targetElement, List<Element> fields) throws IOException {
         ClassName targetTypeName = ClassName.get(targetElement);
-        boolean isActivity = isActivity(targetElement);
-        ClassName builderTypeName = ClassName.bestGuess(targetElement.getQualifiedName() + ProcessorUtils.getBuilderSuffix(isActivity));
+        boolean isContext = isActivity(targetElement) || isService(targetElement);
+        ClassName builderTypeName = ClassName.bestGuess(targetElement.getQualifiedName() + CommonConstants.BUILDER_NAME_SUFFIX);
 
         boolean isPublic = targetElement.getModifiers().contains(Modifier.PUBLIC);
         //abstract fragment
-        boolean isAbstract = !isActivity && targetElement.getModifiers().contains(Modifier.ABSTRACT);
+        boolean isAbstract = !isContext && targetElement.getModifiers().contains(Modifier.ABSTRACT);
 
         TypeSpec.Builder typeBuilder = TypeSpec.classBuilder(builderTypeName)
                 .addJavadoc("The ArgBuilder for {@link $N}.\n", targetElement.getQualifiedName())
                 .addTypeVariable(TypeVariableName.get("T", ParameterizedTypeName.get(builderTypeName, TypeVariableName.get("T"))))
-                .superclass(getSuperBuilderTypeName(targetElement, isActivity));
+                .superclass(getSuperBuilderTypeName(targetElement));
         if (isPublic) {
             typeBuilder.addModifiers(PUBLIC);
         }
@@ -276,7 +281,7 @@ public class ArgBindingProcessor extends AbstractProcessor {
         }
 
         // not abstract Fragment add build method
-        if (!isActivity && !isAbstract) {
+        if (!isContext && !isAbstract) {
             MethodSpec.Builder builderMethodBuilder = MethodSpec.methodBuilder("build")
                     .addJavadoc("Build the fragment.The fragment must have an empty constructor.\n")
                     .addAnnotation(Override.class)
@@ -289,11 +294,11 @@ public class ArgBindingProcessor extends AbstractProcessor {
         }
 
         // Activity add getTargetClass method
-        if (isActivity) {
+        if (isContext) {
             MethodSpec.Builder getTargetClassBuilder = MethodSpec.methodBuilder("getTargetClass")
                     .addAnnotation(Override.class)
                     .addModifiers(Modifier.PROTECTED)
-                    .returns(ParameterizedTypeName.get(ClassName.get(Class.class), WildcardTypeName.subtypeOf(ClassName.bestGuess(ACTIVITY))))
+                    .returns(ParameterizedTypeName.get(ClassName.get(Class.class), WildcardTypeName.subtypeOf(ClassName.bestGuess(CONTEXT))))
                     .addStatement("return $T.class", targetTypeName);
             typeBuilder.addMethod(getTargetClassBuilder.build());
         }
@@ -434,13 +439,15 @@ public class ArgBindingProcessor extends AbstractProcessor {
                 .writeTo(filer);
     }
 
-    private TypeName getSuperBuilderTypeName(TypeElement targetElement, boolean isActivity) {
+    private TypeName getSuperBuilderTypeName(TypeElement targetElement) {
         TypeElement superTypeElement = targetParents.get(targetElement);
         TypeName superTypeName;
         if (superTypeElement != null) {
-            superTypeName = ClassName.bestGuess(superTypeElement.getQualifiedName() + ProcessorUtils.getBuilderSuffix(isActivity));
-        } else if (isActivity) {
-            superTypeName = INTENT_ARG_BUILDER_CLASS;
+            superTypeName = ClassName.bestGuess(superTypeElement.getQualifiedName() + CommonConstants.BUILDER_NAME_SUFFIX);
+        } else if (isActivity(targetElement)) {
+            superTypeName = ACTIVITY_ARG_BUILDER_CLASS;
+        } else if (isService(targetElement)) {
+            superTypeName = SERVICE_ARG_BUILDER_CLASS;
         } else {
             superTypeName = ARG_BUILDER_CLASS;
         }
@@ -501,6 +508,10 @@ public class ArgBindingProcessor extends AbstractProcessor {
         return typeUtil.isSubtype(element.asType(), activityType);
     }
 
+    private boolean isService(Element element) {
+        return typeUtil.isSubtype(element.asType(), serviceType);
+    }
+
     /**
      * Whether it's Parcelable[].
      */
@@ -512,8 +523,8 @@ public class ArgBindingProcessor extends AbstractProcessor {
      * Check whether the bind target is legal.
      */
     private void checkTarget(TypeElement targetElement) {
-        if (!isActivity(targetElement) && !isFragment(targetElement)) {
-            ProcessorUtils.error("The bind target must be activity or fragment.[%s]", targetElement.getQualifiedName());
+        if (!(isActivity(targetElement) || isService(targetElement) || isFragment(targetElement))) {
+            ProcessorUtils.error("The bind target must be activity、service or fragment.[%s]", targetElement.getQualifiedName());
         }
 
         if (targetElement.getNestingKind() != NestingKind.TOP_LEVEL) {

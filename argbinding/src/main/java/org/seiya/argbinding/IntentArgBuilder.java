@@ -16,7 +16,6 @@
 
 package org.seiya.argbinding;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -27,8 +26,8 @@ import android.support.annotation.NonNull;
  * @author ZhengAn
  * @date 2019/2/12
  */
-public abstract class IntentArgBuilder<T extends IntentArgBuilder<T>> extends ArgBuilder<T> {
-    private Context context;
+abstract class IntentArgBuilder<T extends IntentArgBuilder<T>> extends ArgBuilder<T> {
+    Context context;
     private int intentFlags;
 
     /**
@@ -36,7 +35,7 @@ public abstract class IntentArgBuilder<T extends IntentArgBuilder<T>> extends Ar
      *
      * @return
      */
-    protected abstract Class<? extends Activity> getTargetClass();
+    protected abstract Class<? extends Context> getTargetClass();
 
     /**
      * Build the intent.
@@ -72,30 +71,11 @@ public abstract class IntentArgBuilder<T extends IntentArgBuilder<T>> extends Ar
         return self();
     }
 
-    /**
-     * Start activity use build intent, context can't be null.
-     */
-    public void startActivity() {
-        checkContextNull();
-        Intent intent = build();
-        context.startActivity(intent);
-    }
-
-    /**
-     * Start activity use build intent, context must be Activity and can't be null.
-     */
-    public void startActivityForResult(int requestCode) {
-        checkContextNull();
-        if (!(context instanceof Activity)) {
-            throw new IllegalArgumentException("Context is not Activity, can't use startActivityForResult.");
-        }
-        Intent intent = build();
-        ((Activity) context).startActivityForResult(intent, requestCode);
-    }
-
-    private void checkContextNull() {
+    protected void checkContextNull() {
         if (context == null) {
             throw new IllegalArgumentException("Context is null, please set context.");
         }
     }
+
+    public abstract void start();
 }

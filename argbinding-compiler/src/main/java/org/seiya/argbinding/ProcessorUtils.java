@@ -29,16 +29,6 @@ class ProcessorUtils {
         return str.substring(0, 1).toUpperCase().concat(str.substring(1));
     }
 
-    public static String getBuilderSuffix(boolean isActivity) {
-        String suffix;
-        if (isActivity) {
-            suffix = CommonConstants.INTENT_BUILDER_NAME_SUFFIX;
-        } else {
-            suffix = CommonConstants.BUILDER_NAME_SUFFIX;
-        }
-        return suffix;
-    }
-
     public static boolean isEmpty(String str) {
         return str == null || str.isEmpty();
     }

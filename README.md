@@ -1,7 +1,7 @@
 # ArgBinding
 [中文文档](README_CN.md)
 
-ArgBinding is a Android tool to simplify `Activity` and `Fragment` parameter passing.Compared with the conventional method, it has the following advantages:
+ArgBinding is an Android tool to simplify `Activity` and `Fragment` parameter passing.Compared with the conventional method, it has the following advantages:
 
 - Pass parameters through the builder mode to avoid adding parameter constants and factory methods.
 - Check that the parameter's type and name is correct during compilation.
@@ -30,7 +30,7 @@ public class TestFragment extends Fragment {
 }
 
 // user the Fragment
-TestFrTestFragment fragment = TestFragmentBuilder.newBuilder()
+TestFragment fragment = TestArgFragmentArgBuilder.newBuilder()
         .setId("001")
         .setName("ZhangSan")
         .setAge(12)
@@ -58,13 +58,13 @@ public class TestActivity extends AppCompatActivity {
 }
 
 // user the Activity
-TestActivityIntentBuilder.newBuilder()
+TestActivityArgBuilder.newBuilder()
                 .setId("001")
                 .setName("ZhangSan")
                 .setAge(12)
                 .setContext(this)
                 .setIntentFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                .startActivity();
+                .start();
 ```
 
 In the conventional method, the `Fragment` parameter is passed using the officially recommended `setArguments` method, because in many scenarios, the `Fragment` re-creation will occur. When re-creating, the system calls the default constructor of the `Fragment`. The parameters passed by other constructors at this time will disappear. Below is an example of regular method.
@@ -106,8 +106,8 @@ TestFragment fragment = TestFragment.newInstance("001", "ZhangSan", 12);
 
 ```groovy
 dependencies {
-    implementation 'org.seiya:argbinding:1.0.0'
-    annotationProcessor 'org.seiya:argbinding-compiler:1.0.0'
+    implementation 'org.seiya:argbinding:1.1.0'
+    annotationProcessor 'org.seiya:argbinding-compiler:1.1.0'
 }
 ```
 

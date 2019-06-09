@@ -48,7 +48,6 @@ dependencies {
         exclude group: 'com.android.support'
     }
     kapt project(':argbinding-compiler')
-//    annotationProcessor project(':argbinding-compiler')
 //    implementation "org.seiya:argbinding:${ARG_BINDING_VERSION}"
 //    annotationProcessor "org.seiya:argbinding-compiler:${ARG_BINDING_VERSION}"
 
