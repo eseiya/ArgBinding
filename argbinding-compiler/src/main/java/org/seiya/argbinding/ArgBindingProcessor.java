@@ -239,9 +239,19 @@ public class ArgBindingProcessor extends AbstractProcessor {
         for (Map.Entry<TypeElement, List<Element>> entry : targetAndFields.entrySet()) {
             TypeElement target = entry.getKey();
             List<Element> fields = entry.getValue();
-            generateBuilder(target, fields);
+            generateBuilder(target, getAllField(target));
             generateBinder(target, fields);
         }
+    }
+
+    private List<Element> getAllField(TypeElement targetElement) {
+        List<Element> allFields = new ArrayList<>();
+        do {
+            allFields.addAll(targetAndFields.get(targetElement));
+            targetElement = targetParents.get(targetElement);
+            logger.info("getAllField " + targetElement);
+        } while (targetElement != null);
+        return allFields;
     }
 
     private void generateBuilder(TypeElement targetElement, List<Element> fields) throws IOException {
@@ -253,30 +263,22 @@ public class ArgBindingProcessor extends AbstractProcessor {
         //abstract fragment
         boolean isAbstract = !isContext && targetElement.getModifiers().contains(Modifier.ABSTRACT);
 
+        TypeName superTypeName = getSuperBuilderTypeName(targetElement);
         TypeSpec.Builder typeBuilder = TypeSpec.classBuilder(builderTypeName)
                 .addJavadoc("The ArgBuilder for {@link $N}.\n", targetElement.getQualifiedName())
-                .addTypeVariable(TypeVariableName.get("T", ParameterizedTypeName.get(builderTypeName, TypeVariableName.get("T"))))
-                .superclass(getSuperBuilderTypeName(targetElement));
+                .superclass(ParameterizedTypeName.get((ClassName) superTypeName, builderTypeName));
         if (isPublic) {
             typeBuilder.addModifiers(PUBLIC);
         }
         if (isAbstract) {
             typeBuilder.addModifiers(Modifier.ABSTRACT);
         }
-        //add protected constructor
-        MethodSpec construct = MethodSpec.constructorBuilder()
-                .addJavadoc("Don't call the constructor directly, create an instance by {@link #newBuilder()}.\n")
-                .addJavadoc("@see #newBuilder()\n")
-                .addAnnotation(Deprecated.class)
-                .addModifiers(Modifier.PROTECTED)
-                .build();
-        typeBuilder.addMethod(construct);
 
         if (!isAbstract) { //Activity and not abstract Fragment add newBuilder method
             MethodSpec.Builder newBuilderMethodBuilder = MethodSpec.methodBuilder("newBuilder")
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                    .returns(ParameterizedTypeName.get(builderTypeName, WildcardTypeName.subtypeOf(builderTypeName)))
-                    .addStatement("return new $T<>()", builderTypeName);
+                    .returns(builderTypeName)
+                    .addStatement("return new $T()", builderTypeName);
             typeBuilder.addMethod(newBuilderMethodBuilder.build());
         }
 
@@ -324,7 +326,7 @@ public class ArgBindingProcessor extends AbstractProcessor {
 
             MethodSpec.Builder setMethodBuilder = MethodSpec.methodBuilder("set" + ProcessorUtils.toFirstLetterUpperCase(fieldAlias))
                     .addModifiers(Modifier.PUBLIC)
-                    .returns(TypeVariableName.get("T"))
+                    .returns(builderTypeName)
                     .addParameter(TypeName.get(fieldElement.asType()), fieldAlias)
                     .addStatement("args.put" + getBundleMethodType(fieldElement) + "($S,$N)", fieldAlias, fieldAlias)
                     .addStatement("return self()");
@@ -332,7 +334,7 @@ public class ArgBindingProcessor extends AbstractProcessor {
             if (!ProcessorUtils.isEmpty(docString)) {
                 setMethodBuilder.addJavadoc(docString);
             }
-            setMethodBuilder.addJavadoc("@see $N#$N\n", targetElement.getQualifiedName(), fieldName);
+            setMethodBuilder.addJavadoc("@see $N#$N\n", ((TypeElement) fieldElement.getEnclosingElement()).getQualifiedName(), fieldName);
             typeBuilder.addMethod(setMethodBuilder.build());
         }
         JavaFile.builder(builderTypeName.packageName(), typeBuilder.build())
@@ -440,18 +442,14 @@ public class ArgBindingProcessor extends AbstractProcessor {
     }
 
     private TypeName getSuperBuilderTypeName(TypeElement targetElement) {
-        TypeElement superTypeElement = targetParents.get(targetElement);
         TypeName superTypeName;
-        if (superTypeElement != null) {
-            superTypeName = ClassName.bestGuess(superTypeElement.getQualifiedName() + CommonConstants.BUILDER_NAME_SUFFIX);
-        } else if (isActivity(targetElement)) {
+        if (isActivity(targetElement)) {
             superTypeName = ACTIVITY_ARG_BUILDER_CLASS;
         } else if (isService(targetElement)) {
             superTypeName = SERVICE_ARG_BUILDER_CLASS;
         } else {
             superTypeName = ARG_BUILDER_CLASS;
         }
-        superTypeName = ParameterizedTypeName.get((ClassName) superTypeName, TypeVariableName.get("T"));
         return superTypeName;
     }
 
