@@ -365,9 +365,16 @@ public class ArgBindingProcessor extends AbstractProcessor {
 
         TypeSpec.Builder typeBuilder = TypeSpec.classBuilder(builderTypeName)
                 .addJavadoc("The ArgBinder for {@link $N}.\n", targetElement.getQualifiedName())
-                .addModifiers(PUBLIC)
                 .addTypeVariable(TypeVariableName.get("T", targetTypeName))
                 .superclass(getSuperBinderTypeName(superTypeElement));
+        boolean isPublic = targetElement.getModifiers().contains(Modifier.PUBLIC);
+        boolean isAbstract = targetElement.getModifiers().contains(Modifier.ABSTRACT);
+        if (isPublic) {
+            typeBuilder.addModifiers(PUBLIC);
+        }
+        if (isAbstract) {
+            typeBuilder.addModifiers(Modifier.ABSTRACT);
+        }
 
         // add bindArgs method
         MethodSpec.Builder bindArgsMethodBuilder = MethodSpec.methodBuilder("bindArgs")
