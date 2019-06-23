@@ -239,19 +239,26 @@ public class ArgBindingProcessor extends AbstractProcessor {
         for (Map.Entry<TypeElement, List<Element>> entry : targetAndFields.entrySet()) {
             TypeElement target = entry.getKey();
             List<Element> fields = entry.getValue();
-            generateBuilder(target, getAllField(target));
+            generateBuilder(target, getSuperFields(target, fields));
             generateBinder(target, fields);
         }
     }
 
-    private List<Element> getAllField(TypeElement targetElement) {
-        List<Element> allFields = new ArrayList<>();
-        do {
-            allFields.addAll(targetAndFields.get(targetElement));
-            targetElement = targetParents.get(targetElement);
-            logger.info("getAllField " + targetElement);
-        } while (targetElement != null);
-        return allFields;
+    /**
+     * Get all super fields.
+     */
+    private List<Element> getSuperFields(TypeElement targetElement, List<Element> fields) {
+        TypeElement superElement = targetParents.get(targetElement);
+        if (superElement == null) {
+            return fields;
+        } else {
+            List<Element> allFields = new ArrayList<>(fields);
+            do {
+                allFields.addAll(targetAndFields.get(superElement));
+                superElement = targetParents.get(superElement);
+            } while (superElement != null);
+            return allFields;
+        }
     }
 
     private void generateBuilder(TypeElement targetElement, List<Element> fields) throws IOException {
