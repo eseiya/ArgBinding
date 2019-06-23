@@ -263,10 +263,10 @@ public class ArgBindingProcessor extends AbstractProcessor {
         //abstract fragment
         boolean isAbstract = !isContext && targetElement.getModifiers().contains(Modifier.ABSTRACT);
 
-        TypeName superTypeName = getSuperBuilderTypeName(targetElement);
+        TypeName superTypeName = getSuperBuilderTypeName(targetElement, builderTypeName);
         TypeSpec.Builder typeBuilder = TypeSpec.classBuilder(builderTypeName)
                 .addJavadoc("The ArgBuilder for {@link $N}.\n", targetElement.getQualifiedName())
-                .superclass(ParameterizedTypeName.get((ClassName) superTypeName, builderTypeName));
+                .superclass(superTypeName);
         if (isPublic) {
             typeBuilder.addModifiers(PUBLIC);
         }
@@ -441,7 +441,7 @@ public class ArgBindingProcessor extends AbstractProcessor {
                 .writeTo(filer);
     }
 
-    private TypeName getSuperBuilderTypeName(TypeElement targetElement) {
+    private TypeName getSuperBuilderTypeName(TypeElement targetElement, ClassName builderTypeName) {
         TypeName superTypeName;
         if (isActivity(targetElement)) {
             superTypeName = ACTIVITY_ARG_BUILDER_CLASS;
@@ -450,6 +450,7 @@ public class ArgBindingProcessor extends AbstractProcessor {
         } else {
             superTypeName = ARG_BUILDER_CLASS;
         }
+        superTypeName = ParameterizedTypeName.get((ClassName) superTypeName, builderTypeName);
         return superTypeName;
     }
 
