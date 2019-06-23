@@ -33,7 +33,6 @@ import org.seiya.argbinding.annotation.BindTarget;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -239,8 +238,26 @@ public class ArgBindingProcessor extends AbstractProcessor {
         for (Map.Entry<TypeElement, List<Element>> entry : targetAndFields.entrySet()) {
             TypeElement target = entry.getKey();
             List<Element> fields = entry.getValue();
-            generateBuilder(target, fields);
+            generateBuilder(target, getSuperFields(target, fields));
             generateBinder(target, fields);
+        }
+    }
+
+    /**
+     * Get all super fields.
+     */
+    private List<Element> getSuperFields(TypeElement targetElement, List<Element> fields) {
+        TypeElement superElement = targetParents.get(targetElement);
+        if (superElement == null) {
+            return fields;
+        } else {
+            List<Element> allFields = new ArrayList<>(fields);
+            do {
+                // add the super fields to the head, priority processing super fields
+                allFields.addAll(0, targetAndFields.get(superElement));
+                superElement = targetParents.get(superElement);
+            } while (superElement != null);
+            return allFields;
         }
     }
 
@@ -253,30 +270,22 @@ public class ArgBindingProcessor extends AbstractProcessor {
         //abstract fragment
         boolean isAbstract = !isContext && targetElement.getModifiers().contains(Modifier.ABSTRACT);
 
+        TypeName superTypeName = getSuperBuilderTypeName(targetElement, builderTypeName);
         TypeSpec.Builder typeBuilder = TypeSpec.classBuilder(builderTypeName)
                 .addJavadoc("The ArgBuilder for {@link $N}.\n", targetElement.getQualifiedName())
-                .addTypeVariable(TypeVariableName.get("T", ParameterizedTypeName.get(builderTypeName, TypeVariableName.get("T"))))
-                .superclass(getSuperBuilderTypeName(targetElement));
+                .superclass(superTypeName);
         if (isPublic) {
             typeBuilder.addModifiers(PUBLIC);
         }
         if (isAbstract) {
             typeBuilder.addModifiers(Modifier.ABSTRACT);
         }
-        //add protected constructor
-        MethodSpec construct = MethodSpec.constructorBuilder()
-                .addJavadoc("Don't call the constructor directly, create an instance by {@link #newBuilder()}.\n")
-                .addJavadoc("@see #newBuilder()\n")
-                .addAnnotation(Deprecated.class)
-                .addModifiers(Modifier.PROTECTED)
-                .build();
-        typeBuilder.addMethod(construct);
 
         if (!isAbstract) { //Activity and not abstract Fragment add newBuilder method
             MethodSpec.Builder newBuilderMethodBuilder = MethodSpec.methodBuilder("newBuilder")
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                    .returns(ParameterizedTypeName.get(builderTypeName, WildcardTypeName.subtypeOf(builderTypeName)))
-                    .addStatement("return new $T<>()", builderTypeName);
+                    .returns(builderTypeName)
+                    .addStatement("return new $T()", builderTypeName);
             typeBuilder.addMethod(newBuilderMethodBuilder.build());
         }
 
@@ -302,29 +311,37 @@ public class ArgBindingProcessor extends AbstractProcessor {
                     .addStatement("return $T.class", targetTypeName);
             typeBuilder.addMethod(getTargetClassBuilder.build());
         }
+
         // add set method
-        Set<String> allFiledNames = new HashSet<>(fields.size());
+        Map<String, Element> allFiledNames = new HashMap<>(fields.size());
         for (Element fieldElement : fields) {
             BindArg fieldConfig = fieldElement.getAnnotation(BindArg.class);
             String fieldName = fieldElement.getSimpleName().toString();
+            String enclosingElementName = ((TypeElement) fieldElement.getEnclosingElement()).getQualifiedName().toString();
 
             String fieldAlias;
             if (!ProcessorUtils.isEmpty(fieldConfig.value())) {
                 fieldAlias = fieldConfig.value();
                 if (!SourceVersion.isIdentifier(fieldAlias)) {
-                    ProcessorUtils.error("[%s] is not a valid alias.[%s.%s]", fieldAlias, targetElement.getQualifiedName(), fieldName);
+                    ProcessorUtils.error("[%s] is not a valid alias.[%s.%s]", fieldAlias, enclosingElementName, fieldName);
                 }
             } else {
                 fieldAlias = fieldName;
             }
 
-            if (!allFiledNames.add(fieldAlias)) {
-                ProcessorUtils.error("The field or alias already exists.[%s.%s]", targetElement.getQualifiedName(), fieldName);
+            // check fields conflict
+            if (!allFiledNames.containsKey(fieldAlias)) {
+                allFiledNames.put(fieldAlias, fieldElement);
+            } else {
+                Element existElement = allFiledNames.get(fieldAlias);
+                String existEnclosingElementName = ((TypeElement) existElement.getEnclosingElement()).getQualifiedName().toString();
+                ProcessorUtils.error("The field or alias already exists,[%s.%s] and [%s.%s] conflicts.", enclosingElementName, fieldName,
+                        existEnclosingElementName, existElement.getSimpleName());
             }
 
             MethodSpec.Builder setMethodBuilder = MethodSpec.methodBuilder("set" + ProcessorUtils.toFirstLetterUpperCase(fieldAlias))
                     .addModifiers(Modifier.PUBLIC)
-                    .returns(TypeVariableName.get("T"))
+                    .returns(builderTypeName)
                     .addParameter(TypeName.get(fieldElement.asType()), fieldAlias)
                     .addStatement("args.put" + getBundleMethodType(fieldElement) + "($S,$N)", fieldAlias, fieldAlias)
                     .addStatement("return self()");
@@ -332,7 +349,7 @@ public class ArgBindingProcessor extends AbstractProcessor {
             if (!ProcessorUtils.isEmpty(docString)) {
                 setMethodBuilder.addJavadoc(docString);
             }
-            setMethodBuilder.addJavadoc("@see $N#$N\n", targetElement.getQualifiedName(), fieldName);
+            setMethodBuilder.addJavadoc("@see $N#$N\n", enclosingElementName, fieldName);
             typeBuilder.addMethod(setMethodBuilder.build());
         }
         JavaFile.builder(builderTypeName.packageName(), typeBuilder.build())
@@ -348,9 +365,16 @@ public class ArgBindingProcessor extends AbstractProcessor {
 
         TypeSpec.Builder typeBuilder = TypeSpec.classBuilder(builderTypeName)
                 .addJavadoc("The ArgBinder for {@link $N}.\n", targetElement.getQualifiedName())
-                .addModifiers(PUBLIC)
                 .addTypeVariable(TypeVariableName.get("T", targetTypeName))
                 .superclass(getSuperBinderTypeName(superTypeElement));
+        boolean isPublic = targetElement.getModifiers().contains(Modifier.PUBLIC);
+        boolean isAbstract = targetElement.getModifiers().contains(Modifier.ABSTRACT);
+        if (isPublic) {
+            typeBuilder.addModifiers(PUBLIC);
+        }
+        if (isAbstract) {
+            typeBuilder.addModifiers(Modifier.ABSTRACT);
+        }
 
         // add bindArgs method
         MethodSpec.Builder bindArgsMethodBuilder = MethodSpec.methodBuilder("bindArgs")
@@ -439,19 +463,16 @@ public class ArgBindingProcessor extends AbstractProcessor {
                 .writeTo(filer);
     }
 
-    private TypeName getSuperBuilderTypeName(TypeElement targetElement) {
-        TypeElement superTypeElement = targetParents.get(targetElement);
+    private TypeName getSuperBuilderTypeName(TypeElement targetElement, ClassName builderTypeName) {
         TypeName superTypeName;
-        if (superTypeElement != null) {
-            superTypeName = ClassName.bestGuess(superTypeElement.getQualifiedName() + CommonConstants.BUILDER_NAME_SUFFIX);
-        } else if (isActivity(targetElement)) {
+        if (isActivity(targetElement)) {
             superTypeName = ACTIVITY_ARG_BUILDER_CLASS;
         } else if (isService(targetElement)) {
             superTypeName = SERVICE_ARG_BUILDER_CLASS;
         } else {
             superTypeName = ARG_BUILDER_CLASS;
         }
-        superTypeName = ParameterizedTypeName.get((ClassName) superTypeName, TypeVariableName.get("T"));
+        superTypeName = ParameterizedTypeName.get((ClassName) superTypeName, builderTypeName);
         return superTypeName;
     }
 
