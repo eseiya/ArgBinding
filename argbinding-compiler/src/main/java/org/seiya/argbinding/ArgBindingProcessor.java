@@ -33,7 +33,6 @@ import org.seiya.argbinding.annotation.BindTarget;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -254,7 +253,8 @@ public class ArgBindingProcessor extends AbstractProcessor {
         } else {
             List<Element> allFields = new ArrayList<>(fields);
             do {
-                allFields.addAll(targetAndFields.get(superElement));
+                // add the super fields to the head, priority processing super fields
+                allFields.addAll(0, targetAndFields.get(superElement));
                 superElement = targetParents.get(superElement);
             } while (superElement != null);
             return allFields;
@@ -311,24 +311,32 @@ public class ArgBindingProcessor extends AbstractProcessor {
                     .addStatement("return $T.class", targetTypeName);
             typeBuilder.addMethod(getTargetClassBuilder.build());
         }
+
         // add set method
-        Set<String> allFiledNames = new HashSet<>(fields.size());
+        Map<String, Element> allFiledNames = new HashMap<>(fields.size());
         for (Element fieldElement : fields) {
             BindArg fieldConfig = fieldElement.getAnnotation(BindArg.class);
             String fieldName = fieldElement.getSimpleName().toString();
+            String enclosingElementName = ((TypeElement) fieldElement.getEnclosingElement()).getQualifiedName().toString();
 
             String fieldAlias;
             if (!ProcessorUtils.isEmpty(fieldConfig.value())) {
                 fieldAlias = fieldConfig.value();
                 if (!SourceVersion.isIdentifier(fieldAlias)) {
-                    ProcessorUtils.error("[%s] is not a valid alias.[%s.%s]", fieldAlias, targetElement.getQualifiedName(), fieldName);
+                    ProcessorUtils.error("[%s] is not a valid alias.[%s.%s]", fieldAlias, enclosingElementName, fieldName);
                 }
             } else {
                 fieldAlias = fieldName;
             }
 
-            if (!allFiledNames.add(fieldAlias)) {
-                ProcessorUtils.error("The field or alias already exists.[%s.%s]", targetElement.getQualifiedName(), fieldName);
+            // check fields conflict
+            if (!allFiledNames.containsKey(fieldAlias)) {
+                allFiledNames.put(fieldAlias, fieldElement);
+            } else {
+                Element existElement = allFiledNames.get(fieldAlias);
+                String existEnclosingElementName = ((TypeElement) existElement.getEnclosingElement()).getQualifiedName().toString();
+                ProcessorUtils.error("The field or alias already exists,[%s.%s] and [%s.%s] conflicts.", enclosingElementName, fieldName,
+                        existEnclosingElementName, existElement.getSimpleName());
             }
 
             MethodSpec.Builder setMethodBuilder = MethodSpec.methodBuilder("set" + ProcessorUtils.toFirstLetterUpperCase(fieldAlias))
@@ -341,7 +349,7 @@ public class ArgBindingProcessor extends AbstractProcessor {
             if (!ProcessorUtils.isEmpty(docString)) {
                 setMethodBuilder.addJavadoc(docString);
             }
-            setMethodBuilder.addJavadoc("@see $N#$N\n", ((TypeElement) fieldElement.getEnclosingElement()).getQualifiedName(), fieldName);
+            setMethodBuilder.addJavadoc("@see $N#$N\n", enclosingElementName, fieldName);
             typeBuilder.addMethod(setMethodBuilder.build());
         }
         JavaFile.builder(builderTypeName.packageName(), typeBuilder.build())
