@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 ZhengAn.
+ * Copyright (C) 2019 AndyZheng.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import android.os.Bundle;
 /**
  * The base class of arg builder.
  *
- * @author ZhengAn
- * @date 2019/2/12
+ * @author AndyZheng
+ * @since 2019/2/12
  */
 public abstract class ArgBuilder<T extends ArgBuilder<T>> {
     protected Bundle args = new Bundle();

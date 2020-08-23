@@ -65,7 +65,6 @@ uploadArchives {
                 developer {
                     id DEVELOPER_ID
                     name DEVELOPER_NAME
-                    email DEVELOPER_EMAIL
                 }
             }
             licenses {

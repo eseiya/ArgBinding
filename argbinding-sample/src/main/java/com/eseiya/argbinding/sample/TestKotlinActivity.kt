@@ -12,7 +12,7 @@ import java.util.*
 
 /**
  * @author Andy
- * @date 2019/2/17
+ * @since 2019/2/17
  */
 @BindTarget
 class TestKotlinActivity : BaseActivity() {

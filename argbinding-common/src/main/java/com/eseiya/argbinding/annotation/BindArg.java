@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 ZhengAn.
+ * Copyright (C) 2019 AndyZheng.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ import java.lang.annotation.Target;
 /**
  * Mark field need bind arg.
  *
- * @author ZhengAn
- * @date 2019/2/12
+ * @author AndyZheng
+ * @since 2019/2/12
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.FIELD)
