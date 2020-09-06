@@ -5,4 +5,4 @@ compileJava {
     targetCompatibility JAVA_VERSION
 }
 
-apply from: rootProject.file('mvn-push.gradle')
+apply from: rootProject.file('publish.gradle')

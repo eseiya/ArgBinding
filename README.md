@@ -106,8 +106,8 @@ TestFragment fragment = TestFragment.newInstance("001", "ZhangSan", 12);
 
 ```groovy
 dependencies {
-    implementation 'org.seiya:argbinding:1.1.0'
-    annotationProcessor 'org.seiya:argbinding-compiler:1.1.0'
+    implementation 'com.eseiya.argbinding:argbinding:1.1.2'
+    annotationProcessor 'com.eseiya.argbinding:argbinding-compiler:1.1.2'
 }
 ```
 
@@ -118,7 +118,7 @@ This library relies on the `android support` . If there is a conflict, you can e
 ###### Proguard rules
 
 ```
--keep class * extends org.seiya.argbinding.ArgBinder
+-keep class * extends com.eseiya.argbinding.ArgBinder
 ```
 
 More usage reference [argbinding-sample](https://github.com/hbzha/ArgBinding/tree/master/argbinding-sample).
