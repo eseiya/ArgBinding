@@ -19,4 +19,4 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
--keep class * extends org.seiya.argbinding.ArgBinder
+-keep class * extends com.eseiya.argbinding.ArgBinder

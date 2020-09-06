@@ -1,0 +1,116 @@
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+version = PROJ_VERSION
+group = PROJ_GROUP
+
+//============artifacts===============
+if (project.hasProperty("android")) { // Android libraries
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        from android.sourceSets.main.java.srcDirs
+    }
+
+    task javadoc(type: Javadoc) {
+        source = android.sourceSets.main.java.srcDirs
+        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    }
+} else { // Java libraries
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+javadoc {
+    options {
+        encoding "UTF-8"
+        charSet 'UTF-8'
+        author true
+        version true
+        links "http://docs.oracle.com/javase/7/docs/api"
+        failOnError false
+    }
+}
+
+//============bintray===============
+def pomConfig = {
+    if (!project.hasProperty("android")) {
+        packaging POM_PACKAGING
+    }
+    scm {
+        url PROJ_SITE_URL
+    }
+    developers {
+        developer {
+            id DEVELOPER_ID
+            name DEVELOPER_NAME
+        }
+    }
+    licenses {
+        license {
+            name 'The Apache Software License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            distribution 'repo'
+        }
+    }
+}
+
+
+publishing {
+    publications {
+        Production(MavenPublication) {
+            if (project.hasProperty("android")) {
+                afterEvaluate {
+                    from components.release
+                }
+            } else {
+                from components.java
+            }
+            groupId PROJ_GROUP
+            artifactId PROJ_ARTIFACTID
+            version PROJ_VERSION
+
+            pom.withXml {
+                def root = asNode()
+                root.children().last() + pomConfig
+            }
+        }
+    }
+}
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+    publications = ['Production']
+    configurations = ['archives']
+    pkg {
+        repo = BINTRAY_REPO
+        licenses = ['Apache-2.0']
+        name = PROJ_ARTIFACTID
+        desc = PROJ_DESC
+        websiteUrl = PROJ_SITE_URL
+        vcsUrl = PROJ_VCS_URL
+        websiteUrl = PROJ_SITE_URL
+        issueTrackerUrl = PROJ_ISSUE_URL
+        publish = true
+        publicDownloadNumbers = false
+        version {
+            name = this.version
+            released = new Date()
+        }
+    }
+}
