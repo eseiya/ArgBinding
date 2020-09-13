@@ -23,17 +23,15 @@ package com.eseiya.argbinding;
  * @since 2019/2/12
  */
 class CommonUtils {
+
+    private CommonUtils() {
+    }
+
     /**
      * Whether it's in Android or Java framework package.
-     *
-     * @param clsName
-     * @return
      */
     public static boolean isFrameworkPackage(String clsName) {
-        if (clsName.startsWith("android.") || clsName.startsWith("java.")
-                || clsName.startsWith("androidx.")) {
-            return true;
-        }
-        return false;
+        return clsName.startsWith("android.") || clsName.startsWith("java.")
+                || clsName.startsWith("androidx.");
     }
 }

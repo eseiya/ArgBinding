@@ -47,7 +47,7 @@ dependencies {
 //    implementation project(':argbinding')
 //    kapt project(':argbinding-compiler')
     implementation "com.eseiya.argbinding:argbinding:${PROJ_VERSION}"
-    kapt "com.eseiya:argbinding-compiler:${PROJ_VERSION}"
+    kapt "com.eseiya.argbinding:argbinding-compiler:${PROJ_VERSION}"
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'

@@ -25,7 +25,7 @@ import javax.tools.Diagnostic;
  * @author AndyZheng
  * @since 2019/2/12
  */
-public class Logger {
+class Logger {
     private Messager messager;
 
     public Logger(Messager messager) {
@@ -36,7 +36,7 @@ public class Logger {
         printMessage(Diagnostic.Kind.NOTE, msg);
     }
 
-    private void note(String msg) {
+    public void note(String msg) {
         printMessage(Diagnostic.Kind.NOTE, msg);
     }
 
