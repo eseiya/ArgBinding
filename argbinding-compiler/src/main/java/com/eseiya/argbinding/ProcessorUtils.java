@@ -25,6 +25,9 @@ import java.util.Set;
  */
 class ProcessorUtils {
 
+    private ProcessorUtils() {
+    }
+
     public static String toFirstLetterUpperCase(String str) {
         return str.substring(0, 1).toUpperCase().concat(str.substring(1));
     }
@@ -33,7 +36,7 @@ class ProcessorUtils {
         return str == null || str.isEmpty();
     }
 
-    public static boolean isEmpty(Set set) {
+    public static boolean isEmpty(Set<?> set) {
         return set == null || set.isEmpty();
     }
 

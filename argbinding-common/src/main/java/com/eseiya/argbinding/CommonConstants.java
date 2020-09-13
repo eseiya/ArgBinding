@@ -23,6 +23,10 @@ package com.eseiya.argbinding;
  * @since 2019/2/12
  */
 class CommonConstants {
+
+    private CommonConstants() {
+    }
+
     public static final String SEPARATOR = "$$";
     public static final String BINDER_NAME_SUFFIX = SEPARATOR + "ArgBinder";
     public static final String BUILDER_NAME_SUFFIX = "ArgBuilder";
